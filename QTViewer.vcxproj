@@ -157,6 +157,8 @@
     <ClInclude Include="src\boundingsphere.h" />
     <ClInclude Include="src\DrawComponent.h" />
     <ClInclude Include="src\InnerSphereTree.h" />
+    <ClInclude Include="src\linemesh.h" />
+    <ClInclude Include="src\Octree.h" />
     <ClInclude Include="src\pmp\algorithms\barycentric_coordinates.h" />
     <ClInclude Include="src\pmp\algorithms\curvature.h" />
     <ClInclude Include="src\pmp\algorithms\decimation.h" />

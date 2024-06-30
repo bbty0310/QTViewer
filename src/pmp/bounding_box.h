@@ -21,6 +21,7 @@ public:
 
     //! Construct from min and max points.
     BoundingBox(const Point& min, const Point& max) : min_(min), max_(max) {}
+    BoundingBox(const pmp::vec3& min, const pmp::vec3& max) : min_(min), max_(max) {}
 
     //! Add point to the bounding box.
     BoundingBox& operator+=(const Point& p)
@@ -68,6 +69,26 @@ public:
     {
         return is_empty() ? Scalar(0.0) : distance(max_, min_);
     }
+
+    bool intersects(Point& point) 
+    {
+        return (point[0] >= min_[0] && point[0] <= max_[0] &&
+            point[1] >= min_[1] && point[1] <= max_[1] &&
+            point[2] >= min_[2] && point[2] <= max_[2]);
+    }
+
+    //! Check if a triangle intersects the bounding box.
+    bool intersects(std::vector<Point>& triangle) 
+    {
+        for (auto& vertex : triangle)
+        {
+            if (intersects(vertex))
+                return true;
+        }
+
+        return false;
+    }
+
 
 private:
     Point min_, max_;

@@ -7,7 +7,6 @@ public:
     void Init();
     void Draw();
     void DrawSphere(float level);
-    void reduceRadius();
 
     pmp::SurfaceMesh mesh;
     

@@ -27,30 +27,27 @@ public:
     BoundingBox box;
     vector<BoundingBox> boxes;
     vector<Face> faces;
-    BV* left_, * right_;
+    BV* child[8];
     BV(vector<Face> faces, int lv, SurfaceMesh& mesh);
-    void SplitBV();
     bool IsLeaf();
+    ~BV();  // 소멸자 추가
 };
 
 // BVH 트리
 class BVH
 {
-private:
-
 public:
-    vector<BV> roots;
+    vector<BV*> roots;
 
     BVH(vector<Face> allFaces, SurfaceMesh& mesh);
-    vector<vector<Face>> SplitFace(vector<Face> allFaces, SurfaceMesh& mesh);
+    ~BVH();  // 소멸자 추가
 };
 
 // BV 생성자
-inline BV::BV(vector<Face> fcs, int lv, SurfaceMesh& mesh) {
+BV::BV(vector<Face> fcs, int lv, SurfaceMesh& mesh) {
     faces = fcs;
     level = lv;
-    left_ = nullptr;
-    right_ = nullptr;
+    for (int i = 0; i < 8; ++i) child[i] = nullptr;
 
     Point minPoint = Point(FLT_MAX, FLT_MAX, FLT_MAX);
     Point maxPoint = Point(-FLT_MAX, -FLT_MAX, -FLT_MAX);
@@ -66,49 +63,77 @@ inline BV::BV(vector<Face> fcs, int lv, SurfaceMesh& mesh) {
 
     box = BoundingBox(minPoint, maxPoint);
 
-    auto lengths = maxPoint - minPoint;
-    int longestAxis = 0;
-    if (lengths[1] > lengths[longestAxis]) longestAxis = 1;
-    if (lengths[2] > lengths[longestAxis]) longestAxis = 2;
+    // 분할 기준 중심점
+    Point center = box.center();
 
-    // 분할 기준 축
-    double splitValue = 0.5 * (minPoint[longestAxis] + maxPoint[longestAxis]);
-
-    vector<Face> leftFaces, rightFaces;
+    vector<Face> groups[8];
 
     for (size_t i = 0; i < faces.size(); i++)
     {
-        if (boxes[i].center()[longestAxis] < splitValue)
-        {
-            leftFaces.push_back(faces[i]);      // 기준 축보다 작으면 left
-        }
-        else
-        {
-            rightFaces.push_back(faces[i]);     // 기준 축보다 크면 right
-        }
+        BoundingBox faceBox = boxes[i];
+        Point faceCenter = faceBox.center();
+
+        int index = 0;
+        if (faceCenter[0] > center[0]) index |= 1;
+        if (faceCenter[1] > center[1]) index |= 2;
+        if (faceCenter[2] > center[2]) index |= 4;
+
+        groups[index].push_back(faces[i]);
     }
 
-    // Balance 유지
-    if (!leftFaces.empty() && !rightFaces.empty())
+    for (int i = 0; i < 8; ++i)
     {
-        if (leftFaces.size() > 2)
+        if (!groups[i].empty())
         {
-            left_ = new BV(leftFaces, level + 1, mesh);
-        }
-        if (rightFaces.size() > 2) {
-            right_ = new BV(rightFaces, level + 1, mesh);
+            child[i] = new BV(groups[i], level + 1, mesh);
         }
     }
 }
 
 // 노드(BV)가 리프인지 검사하는 함수
-inline bool BV::IsLeaf()
+bool BV::IsLeaf()
 {
-    return left_ == nullptr && right_ == nullptr;
+    for (int i = 0; i < 8; i++)
+    {
+        if (child[i] != nullptr) return false;
+    }
+    return true;
+}
+
+// BV 소멸자
+BV::~BV() {
+    for (int i = 0; i < 8; ++i) {
+        delete child[i];
+    }
 }
 
 // BVH 생성자
 inline BVH::BVH(vector<Face> allFaces, SurfaceMesh& mesh)
 {
-    roots.push_back(BV(allFaces, 0, mesh));
+    roots.push_back(new BV(allFaces, 0, mesh));  // BV 객체 대신 BV* 포인터를 저장
+}
+
+// BVH 소멸자
+inline BVH::~BVH() {
+    for (auto root : roots) {
+        delete root;
+    }
+}
+
+// 중점을 계산하고 출력하는 재귀 함수
+void PrintCenters(BV* node)
+{
+    if (node == nullptr) return;
+
+    // 현재 노드의 중점 출력
+    Point center = node->box.center();
+    std::cout << "Level: " << node->level << " Center: ("
+        << center[0] << ", " << center[1] << ", " << center[2] << ")" << std::endl;
+
+    // 자식 노드들의 중점 재귀적으로 계산 및 출력
+    for (int i = 0; i < 8; ++i) {
+        if (node->child[i] != nullptr) {
+            PrintCenters(node->child[i]);
+        }
+    }
 }

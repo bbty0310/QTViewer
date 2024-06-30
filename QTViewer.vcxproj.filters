@@ -278,6 +278,12 @@
     <ClInclude Include="src\boundingsphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\linemesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Octree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="QTViewer.ui">
