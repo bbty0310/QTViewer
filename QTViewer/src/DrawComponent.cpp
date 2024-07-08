@@ -90,17 +90,6 @@ int maxHeight(BVH& bvh)
 //		int rightHeight = 0;
 //		int midHeight = 0;
 //
-//		int child1Height ; int child2Height;int child3Height;int child4Height;int child5Height;int child6Height;int child7Height;int child8Height;
-//		child1Height = child2Height = child3Height = child4Height = child5Height = child6Height = child7Height = child8Height = 0;
-//		if (node.child1 != nullptr) child1Height = treeHeight(*node.child1);
-//		if (node.child2 != nullptr) child2Height = treeHeight(*node.child2);
-//		if (node.child3 != nullptr) child3Height = treeHeight(*node.child3);
-//		if (node.child4 != nullptr) child4Height = treeHeight(*node.child4);
-//		if (node.child5 != nullptr) child5Height = treeHeight(*node.child5);
-//		if (node.child6 != nullptr) child6Height = treeHeight(*node.child6);
-//		if (node.child7 != nullptr) child7Height = treeHeight(*node.child7);
-//		if (node.child8 != nullptr) child8Height = treeHeight(*node.child8);
-//
 //		/*if (node.left_ != nullptr)
 //		{
 //			leftHeight = treeHeight(*node.left_);
@@ -116,8 +105,7 @@ int maxHeight(BVH& bvh)
 //			midHeight = treeHeight(*node.mid_);
 //		}*/
 //
-//		//return 1 + max(leftHeight, max(rightHeight, midHeight));
-//		return 1 + max(child1Height, max(child2Height, max(child3Height, max(child4Height, max(child5Height, max(child6Height, max(child7Height, child8Height)))))));
+//		return 1 + max(leftHeight, max(rightHeight, midHeight));
 //	}
 //}
 //
@@ -445,7 +433,6 @@ void DrawBVOCbyLevel(BVH* bvh, SurfaceMesh& mesh, auto& normals, int lv)
 		q.push(&bv);
 	}
 
-	// 큐가 비어있지 않은 동안 반복
 	while (!q.empty()) {
 		auto* bv = q.front();
 		q.pop();
@@ -454,23 +441,29 @@ void DrawBVOCbyLevel(BVH* bvh, SurfaceMesh& mesh, auto& normals, int lv)
 		if (bv->level == 0)
 		{
 			glPointSize(20.0f);
-			// randomPoint(bv); // 주석 해제하여 필요 시 랜덤 포인트 생성
+			// randomPoint(bv);
 		}
 
 		// 현재 노드의 레벨이 주어진 레벨과 일치하는 경우
 		if (bv->level == lv)
 		{
 			BoundingBox bvBox = bv->box;
-			// DrawMesh(bv, mesh, normals); // 주석 해제하여 필요 시 메시 그리기
+			//DrawMesh(bv, mesh, normals);
 
-			// 자식 노드들 Drawing
+			int childCount = 0;
 			for (BV* child : bv->children) {
 				if (child != nullptr) {
-					//DrawWireAABB(child->box);
-					// DrawSolidAABB(child->box); // 주석 해제하여 필요 시 Solid AABB 그리기
-					// DrawSphere(child->box); // 주석 해제하여 필요 시 Sphere 그리기
-					 DrawMesh(child, mesh, normals); // 주석 해제하여 필요 시 Mesh 그리기
-					q.push(child);
+					if (childCount < 2) { // 최대 자식 출력
+						// DrawWireAABB(child->box);
+						// DrawSolidAABB(child->box); 
+						// DrawSphere(child->box); 
+						 DrawMesh(child, mesh, normals);
+						q.push(child);
+						childCount++; // 추가된 자식 개수 증가
+					}
+					else { // 나머지 자식은 무시
+						break; 
+					}
 				}
 			}
 		}
@@ -485,6 +478,7 @@ void DrawBVOCbyLevel(BVH* bvh, SurfaceMesh& mesh, auto& normals, int lv)
 		}
 	}
 }
+
 
 
 
