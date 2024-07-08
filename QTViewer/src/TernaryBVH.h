@@ -3,6 +3,7 @@
 #include "DrawComponent.h"
 #include "pmp/bounding_box.h"
 #include "pmp/algorithms/normals.h"
+#include <queue>
 
 using namespace pmp;
 using namespace std;
@@ -41,6 +42,7 @@ public:
     vector<BV> roots;
 
     BVH(vector<Face> allFaces, SurfaceMesh& mesh);
+    int GetMinLeafLevel();
 };
 
 // BV 생성자
@@ -100,6 +102,34 @@ inline BV::BV(vector<Face> fcs, int lv, SurfaceMesh& mesh) {
         if (rightFaces.size() > 2)
             right_ = new BV(rightFaces, level + 1, mesh);
     }
+}
+
+// 리프가 처음 나오는 트리의 레벨 계산
+int BVH::GetMinLeafLevel()
+{
+    if (roots.empty())
+        return -1;
+
+    queue<BV*> nodeQueue;
+    nodeQueue.push(&roots[0]);
+
+    while (!nodeQueue.empty())
+    {
+        BV* currentNode = nodeQueue.front();
+        nodeQueue.pop();
+
+        if (currentNode->IsLeaf())
+            return currentNode->level;
+
+        if (currentNode->left_ != nullptr)
+            nodeQueue.push(currentNode->left_);
+        if (currentNode->mid_ != nullptr)
+            nodeQueue.push(currentNode->mid_);
+        if (currentNode->right_ != nullptr)
+            nodeQueue.push(currentNode->right_);
+    }
+
+    return -1;
 }
 
 // 노드(BV)가 리프인지 검사하는 함수

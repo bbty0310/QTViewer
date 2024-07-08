@@ -457,12 +457,12 @@ void DrawBVOCbyLevel(BVH* bvh, SurfaceMesh& mesh, auto& normals, int lv)
 						// DrawWireAABB(child->box);
 						// DrawSolidAABB(child->box); 
 						// DrawSphere(child->box); 
-						 DrawMesh(child, mesh, normals);
+						DrawMesh(child, mesh, normals);
 						q.push(child);
 						childCount++; // 추가된 자식 개수 증가
 					}
 					else { // 나머지 자식은 무시
-						break; 
+						break;
 					}
 				}
 			}
@@ -500,7 +500,7 @@ void DrawComponent::Init()
 
 	bvh = new BVH(faces, mesh);
 	lv = maxHeight(*bvh);
-	currentLevel = lv * RATIO;
+	currentLevel = bvh->GetMinLeafLevel();
 
 	cout << "트리의 전체 노드 개수 : " << nodeCount << endl;
 	cout << "트리의 전체 높이 : " << lv << endl;

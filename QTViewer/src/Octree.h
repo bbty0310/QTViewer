@@ -3,6 +3,7 @@
 #include "DrawComponent.h"
 #include "pmp/bounding_box.h"
 #include "pmp/algorithms/normals.h"
+#include <queue>
 
 using namespace pmp;
 using namespace std;
@@ -41,6 +42,7 @@ public:
     vector<BV> roots;
 
     BVH(vector<Face> allFaces, SurfaceMesh& mesh);
+    int GetMinLeafLevel();
 };
 
 // BV 생성자
@@ -68,7 +70,7 @@ inline BV::BV(vector<Face> fcs, int lv, SurfaceMesh& mesh) {
     double splitX = 0.5 * (minPoint[0] + maxPoint[0]);
     double splitY = 0.5 * (minPoint[1] + maxPoint[1]);
     double splitZ = 0.5 * (minPoint[2] + maxPoint[2]);
-   
+
     vector<Face> childFaces[8];
     int cnt[8] = { 0 };
     // 각 축에 대한 분할
@@ -100,4 +102,41 @@ inline bool BV::IsLeaf()
 inline BVH::BVH(vector<Face> allFaces, SurfaceMesh& mesh)
 {
     roots.push_back(BV(allFaces, 0, mesh));
+}
+
+int BVH::GetMinLeafLevel()
+{
+    if (roots.empty())
+        return -1;
+
+    queue<BV*> nodeQueue;
+    nodeQueue.push(&roots[0]);
+
+    while (!nodeQueue.empty())
+    {
+        BV* currentNode = nodeQueue.front();
+        nodeQueue.pop();
+
+        if (currentNode->IsLeaf())
+            return currentNode->level;
+
+        if (currentNode->children[0] != nullptr)
+            nodeQueue.push(currentNode->children[0]);
+        if (currentNode->children[1] != nullptr)
+            nodeQueue.push(currentNode->children[1]);
+        if (currentNode->children[2] != nullptr)
+            nodeQueue.push(currentNode->children[2]);
+        if (currentNode->children[3] != nullptr)
+            nodeQueue.push(currentNode->children[3]);
+        if (currentNode->children[4] != nullptr)
+            nodeQueue.push(currentNode->children[4]);
+        if (currentNode->children[5] != nullptr)
+            nodeQueue.push(currentNode->children[5]);
+        if (currentNode->children[6] != nullptr)
+            nodeQueue.push(currentNode->children[6]);
+        if (currentNode->children[7] != nullptr)
+            nodeQueue.push(currentNode->children[7]);
+    }
+
+    return -1;
 }
